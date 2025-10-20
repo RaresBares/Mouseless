@@ -1,7 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import torch
-from data.loader import YoloHandKptsDataset
 
 IMAGENET_MEAN = (0.485, 0.456, 0.406)
 IMAGENET_STD  = (0.229, 0.224, 0.225)
@@ -53,7 +52,10 @@ def show_image_kpts(img, kpts, normalized=True, show_skeleton=True, title=None, 
 
 
     H, W = img_np.shape[:2]
+    kpts[:, 0] *= W
+    kpts[:, 1] *= H
     k = kpts.detach().cpu().numpy() if isinstance(kpts, torch.Tensor) else np.asarray(kpts, np.float32)
+
     xy = k[:, :2].copy()
     if normalized:  # relative → Pixel
         xy[:, 0] *= W
@@ -175,8 +177,8 @@ def show_Skeleton(img, kpts):
 def show_Tips(img, kpts, wrist=False):
     show_image_tips(img,kpts,normalized=False,show_skeleton=False,show_wrist=wrist)
 
-def show_middle_point(img, kpts, middlex, middley):
-    show_image_kpts(img, kpts, normalized=False, show_skeleton=True, do_show=False)
+def show_middle_point(img, kpts, middlex, middley, skeleton = True):
+    show_image_kpts(img, kpts, normalized=False, show_skeleton=skeleton, do_show=False)
 
     plt.scatter(middlex*img.shape[1], middley*img.shape[2], s=240)
     plt.show()
