@@ -7,9 +7,28 @@ class HandPoseFeaturizer:
         self.TIPS = [4,8,12,16,20]
     def __call__(self, k):
         nk = self.norm(k)
+        a = np.asarray(nk, np.float32)
+        if a.ndim == 1:
+            a = a.reshape(-1, 3) if (a.size % 3) == 0 else a.reshape(-1, 2)
+        if a.shape[1] == 2:
+            v = np.ones((a.shape[0], 1), np.float32)
+            a = np.concatenate([a, v], axis=1)
+        return a.astype(np.float32)
+    def get_middlepoint(self, k, tips_only=True):
+        nk = self.norm(k)
         xy = nk[:, :2]
-        f = [xy.reshape(-1), self._bone_lengths(xy), self._curl_angles(xy), self._abduction(xy), self._tips_pairwise(xy)]
-        return np.concatenate(f).astype(np.float32)
+        v  = nk[:, 2] if nk.shape[1] >= 3 else np.ones(len(nk), np.float32)
+        if tips_only:
+            idx = [i for i in self.TIPS if i < len(xy)]
+        else:
+            idx = list(range(len(xy)))
+        vis = [np.isfinite(xy[i]).all() and (v[i] > 0) for i in idx]
+        if any(vis):
+            pts = np.stack([xy[i] for i, ok in zip(idx, vis) if ok], 0)
+            c = pts.mean(0)
+        else:
+            c = np.array([0.0, 0.0], np.float32)
+        return float(c[0]), float(c[1])
     def _bone_lengths(self, xy):
         out = []
         for f in self.FINGERS.values():
@@ -65,3 +84,16 @@ class HandPoseFeaturizer:
             for j in range(i+1, len(P)):
                 d.append(float(np.linalg.norm(P[i]-P[j])))
         return np.array(d, np.float32)
+
+def get_middlepoint_xy(img, kpts, tips=(4,8,12,16,20)):
+    xy = kpts[:, :2].copy()
+    v  = kpts[:, 2] if kpts.shape[1] >= 3 else np.ones(len(kpts), np.float32)
+    H, W = img.shape[1], img.shape[2]
+    idx = [i for i in tips if i < len(xy)]
+    vis = [np.isfinite(xy[i]).all() and (v[i] > 0) for i in idx]
+    if any(vis):
+        pts = np.stack([xy[i] for i, ok in zip(idx, vis) if ok], 0)
+        c = pts.mean(0)
+    else:
+        c = np.array([0.0, 0.0], np.float32)
+    return float(c[0]*W), float(c[1]*H)

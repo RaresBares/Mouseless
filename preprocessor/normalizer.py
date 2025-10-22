@@ -7,7 +7,7 @@ class HandPoseNormalizer:
         self.eps = eps
         self.MCP = [5, 9, 13, 17]
         self.TIPS = [4, 8, 12, 16, 20]
-    def __call__(self, k):
+    def __call__(self, k): ##k = keypoints (N,3) --> x,y,v
         a = np.asarray(k, dtype=np.float32)
         if a.ndim == 1:
             a = a.reshape(-1, 3)

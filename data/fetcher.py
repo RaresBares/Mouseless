@@ -57,6 +57,3 @@ def fetch_data(dst_root="raw/hand-keypoints", exts_img=(".jpg",".jpeg",".png"), 
         "val_images": str(img_val_dst.resolve()),
         "val_labels": str(lab_val_dst.resolve())
     }
-
-if __name__ == "__main__":
-    paths = fetch_data()

@@ -177,10 +177,15 @@ def show_Skeleton(img, kpts):
 def show_Tips(img, kpts, wrist=False):
     show_image_tips(img,kpts,normalized=False,show_skeleton=False,show_wrist=wrist)
 
+def show_middle_point_wrapper(middlex, middley, skeleton=True):
+    def _fn(img, kpts):
+        return show_middle_point(img, kpts, middlex, middley, skeleton=skeleton)
+    return _fn
+
 def show_middle_point(img, kpts, middlex, middley, skeleton = True):
     show_image_kpts(img, kpts, normalized=False, show_skeleton=skeleton, do_show=False)
 
-    plt.scatter(middlex*img.shape[1], middley*img.shape[2], s=240)
+    plt.scatter(middlex*img.shape[2], middley*img.shape[1], s=240)
     plt.show()
     return plt
 """
